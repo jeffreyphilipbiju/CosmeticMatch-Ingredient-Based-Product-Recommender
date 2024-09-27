@@ -1,0 +1,262 @@
+#Task 1: Import and Inspect Dataset
+
+
+# Import libraries
+import pandas as pd
+import numpy as np
+from sklearn.manifold import TSNE
+import bokeh
+from bokeh.plotting import figure, show
+from bokeh.models import ColumnDataSource, HoverTool
+
+# Read the dataset
+df = pd.read_csv('cosmetics.csv')
+
+# Display a sample of five rows
+display(df.sample(5))
+
+# Display counts of product types
+print(df['Label'].value_counts())
+
+
+# Task 2: Filter Data for Moisturizers and Dry Skint
+
+
+# Filter for moisturizers
+moisturizers = df[df['Label'] == 'Moisturizer']
+
+# Filter for dry skin products
+moisturizers_dry = moisturizers[moisturizers['Dry'] == 1]
+
+# Reset the index
+moisturizers_dry = moisturizers_dry.reset_index(drop=True)
+
+#Task 3: Tokenize the Ingredients:
+
+
+# Initialize an empty corpus list and ingredient index dictionary
+corpus = []
+ingredient_idx = {}
+idx = 0
+
+# Tokenize the ingredients and build the dictionary
+for ingredients in moisturizers_dry['Ingredients']:
+    tokens = ingredients.lower().split(', ')
+    corpus.append(tokens)
+    
+    for token in tokens:
+        if token not in ingredient_idx:
+            ingredient_idx[token] = idx
+            idx += 1
+#
+Task 1: Import and Inspect Dataset
+
+
+[ ]
+# Import libraries
+import pandas as pd
+import numpy as np
+from sklearn.manifold import TSNE
+import bokeh
+from bokeh.plotting import figure, show
+from bokeh.models import ColumnDataSource, HoverTool
+
+# Read the dataset
+df = pd.read_csv('cosmetics.csv')
+
+# Display a sample of five rows
+display(df.sample(5))
+
+# Display counts of product types
+print(df['Label'].value_counts())
+
+
+Task 2: Filter Data for Moisturizers and Dry Skint
+
+
+[ ]
+# Filter for moisturizers
+moisturizers = df[df['Label'] == 'Moisturizer']
+
+# Filter for dry skin products
+moisturizers_dry = moisturizers[moisturizers['Dry'] == 1]
+
+# Reset the index
+moisturizers_dry = moisturizers_dry.reset_index(drop=True)
+
+Task 3: Tokenize the Ingredients
+
+
+# Initialize an empty corpus list and ingredient index dictionary
+corpus = []
+ingredient_idx = {}
+idx = 0
+
+# Tokenize the ingredients and build the dictionary
+for ingredients in moisturizers_dry['Ingredients']:
+    tokens = ingredients.lower().split(', ')
+    corpus.append(tokens)
+    
+    for token in tokens:
+        if token not in ingredient_idx:
+            ingredient_idx[token] = idx
+            idx += 1
+
+
+Task 4: Initialize a Document-Term Matrix
+
+# Number of products and number of unique ingredients
+M = len(moisturizers_dry)
+N = len(ingredient_idx)
+
+# Initialize the document-term matrix with zeros
+A = np.zeros((M, N))
+
+
+Task 1: Import and Inspect Dataset
+
+
+[ ]
+# Import libraries
+import pandas as pd
+import numpy as np
+from sklearn.manifold import TSNE
+import bokeh
+from bokeh.plotting import figure, show
+from bokeh.models import ColumnDataSource, HoverTool
+
+# Read the dataset
+df = pd.read_csv('cosmetics.csv')
+
+# Display a sample of five rows
+display(df.sample(5))
+
+# Display counts of product types
+print(df['Label'].value_counts())
+
+
+Task 2: Filter Data for Moisturizers and Dry Skint
+
+
+[ ]
+# Filter for moisturizers
+moisturizers = df[df['Label'] == 'Moisturizer']
+
+# Filter for dry skin products
+moisturizers_dry = moisturizers[moisturizers['Dry'] == 1]
+
+# Reset the index
+moisturizers_dry = moisturizers_dry.reset_index(drop=True)
+
+#Task 3: Tokenize the Ingredients
+
+
+[ ]
+# Initialize an empty corpus list and ingredient index dictionary
+corpus = []
+ingredient_idx = {}
+idx = 0
+
+# Tokenize the ingredients and build the dictionary
+for ingredients in moisturizers_dry['Ingredients']:
+    tokens = ingredients.lower().split(', ')
+    corpus.append(tokens)
+    
+    for token in tokens:
+        if token not in ingredient_idx:
+            ingredient_idx[token] = idx
+            idx += 1
+
+#Task 4: Initialize a Document-Term Matrix
+
+
+
+# Number of products and number of unique ingredients
+M = len(moisturizers_dry)
+N = len(ingredient_idx)
+
+# Initialize the document-term matrix with zeros
+A = np.zeros((M, N))
+
+#Task 5: Create One-Hot Encoder Function
+# One-hot encoder function
+def oh_encoder(tokens):
+    x = np.zeros(N)
+    for token in tokens:
+        if token in ingredient_idx:
+            x[ingredient_idx[token]] = 1
+    return x
+
+# Task 6: Populate the Matrix A
+
+# Populate the matrix A with one-hot encoded ingredient lists
+for i, tokens in enumerate(corpus):
+    A[i, :] = oh_encoder(tokens)
+
+
+#Task 7: Dimension Reduction with t-SNE
+
+# Initialize t-SNE
+model = TSNE(n_components=2, learning_rate=200, random_state=42)
+
+# Apply t-SNE to reduce dimensions
+tsne_features = model.fit_transform(A)
+
+# Store the results in new columns 'X' and 'Y'
+moisturizers_dry['X'] = tsne_features[:, 0]
+moisturizers_dry['Y'] = tsne_features[:, 1]
+
+
+#Task 8: Plot the Results
+# Create a scatter plot using Bokeh
+plot = figure(title="Cosmetic Ingredient Similarity", 
+              x_axis_label='T-SNE 1', y_axis_label='T-SNE 2')
+
+# Use scatter instead of circle, and pass size as an argument
+plot.scatter(x='X', y='Y', size=8, source=source)
+
+from bokeh.plotting import output_notebook, show
+
+# Enable notebook output
+output_notebook()
+
+# Show the plot
+show(plot)
+
+#Task 9: Add Hover Tool
+
+# Add hover tool
+hover = HoverTool()
+hover.tooltips = [
+    ('Item', '@Name'),
+    ('Brand', '@Brand'),
+    ('Price', '$@Price'),
+    ('Rank', '@Rank')
+]
+
+plot.add_tools(hover)
+
+#Task 10: Display the Plot
+
+# Show the plot
+show(plot)
+
+#Task 11: Compare Two Similar Products
+
+# Display ingredients for two similar products
+product_1 = moisturizers_dry[moisturizers_dry['Name'] == 'Color Control Cushion Compact Broad Spectrum SPF 50+']
+product_2 = moisturizers_dry[moisturizers_dry['Name'] == 'BB Cushion Hydra Radiance SPF 50']
+
+print("Product 1 Ingredients:", product_1['Ingredients'].values[0])
+print("Product 2 Ingredients:", product_2['Ingredients'].values[0])
+
+
+
+
+
+
+
+
+
+
+
